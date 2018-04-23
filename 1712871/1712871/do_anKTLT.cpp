@@ -6,8 +6,6 @@
 #include <fcntl.h> 
 #include <io.h> 
 
-#define n 10
-
 struct sinhvien
 {
 	wchar_t* mssv;
@@ -20,6 +18,16 @@ struct sinhvien
 	wchar_t* motabanthan;
 	wchar_t* sothichx;
 };
+
+int timN(FILE* f)
+{
+	int i = 0;
+	while (!feof(f)){
+		if (fgetwc(f) == L'\n')
+			i++;
+	}
+	return i;
+}
 
 int len(wchar_t s[])
 {
@@ -155,33 +163,84 @@ void doc(FILE* fIn, sinhvien *x, int N)
 
 		fseek(fIn, b, SEEK_SET);
 		if (fgetwc(fIn) == L','){
-			if (fgetwc(fIn) != L'"'){
-				fseek(fIn, b + 1, SEEK_SET);
-				a = token(fIn, '\n');
-				x[i].sothichx = (wchar_t*)malloc(sizeof(wchar_t)*a);
-				fseek(fIn, b + 1, SEEK_SET);
-				fgetws(x[i].sothichx, a, fIn);
-				b = ftell(fIn);
-				begin = b;
-			}
-			else{
-				fseek(fIn, b + 2, SEEK_SET);
-				a = token(fIn, '"');
-				x[i].sothichx = (wchar_t*)malloc(sizeof(wchar_t)*a);
-				fseek(fIn, b + 2, SEEK_SET);
-				fgetws(x[i].sothichx, a, fIn);
 
-				b = ftell(fIn) + 1;
-			}
-			begin = b + 2;
+			fseek(fIn, b + 1, SEEK_SET);
+			a = token(fIn, '\n');
+			x[i].sothichx = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].sothichx, a, fIn);
+			begin = ftell(fIn) + 2;
 		}
 		else{
+			x[i].sothichx = L"Không có sở thích";
 			begin = b;
 		}
 	}
 }
 
-void replace(FILE*& f, sinhvien p)
+void ghiSoThich(FILE* f, wchar_t* s)
+{
+	bool kt = false;
+
+	int N = len(s);
+
+	for (int e = 0; e < N; e++){
+		if (s[e] == L'"' || s[e] == L','){
+			kt = true;
+			break;
+		}
+	}
+
+	if (kt == true){
+		int i = 0;
+		while (i < N){
+			if (s[i] == L'"'){
+				for (int j = i + 1; j < N; j++){
+					if (s[j] == L'"'){
+						fputws(L"\t\t\t\t\t\t\t\t<li>", f);
+						for (int t = i + 1; t < j; t++)
+							fputwc(s[t], f);
+						fputws(L"</li>", f);
+						i = j + 1;
+						break;
+					}
+				}
+			}
+			else{
+				for (int j = i; j < N; j++){
+					if (s[j] == L','){
+						fputws(L"\t\t\t\t\t\t\t\t<li>", f);
+						for (int t = i; t < j; t++)
+							fputwc(s[t], f);
+						fputws(L"</li>", f);
+						i = j;
+						break;
+					}
+				}
+			}
+			i++;
+		}
+		if (s[N - 2] != L'"'){
+			for (int j = N - 2; j >= 0; j--){
+				if (s[j] == L','){
+					fputws(L"\t\t\t\t\t\t\t\t<li>", f);
+					for (int t = j + 1; t <= N - 2; t++){
+						fputwc(s[t], f);
+					}
+					fputws(L"</li>", f);
+					break;
+				}
+			}
+		}
+	}
+	else{
+		fputws(L"\t\t\t\t\t\t\t\t<li>", f);
+		fputws(s, f);
+		fputws(L"</li>", f);
+	}
+}
+
+void replace(FILE* f, sinhvien p)
 {
 	wchar_t* e = themChuoi(p.mssv, L".html");
 	FILE* tm;
@@ -192,6 +251,7 @@ void replace(FILE*& f, sinhvien p)
 	}
 	else{
 		int i = 0;
+		rewind(f);
 		int pos = finding(f, L"<title>HCMUS - ");
 		rewind(f);
 		while (ftell(f) < pos){
@@ -208,6 +268,8 @@ void replace(FILE*& f, sinhvien p)
 		}
 		i = ftell(f);
 		fputws(p.hovaten, tm);
+		fputws(L" - ", tm);
+		fputws(p.mssv, tm);
 
 		rewind(f);
 		pos = finding(f, L"Email: ");
@@ -222,7 +284,7 @@ void replace(FILE*& f, sinhvien p)
 		rewind(f);
 		pos = finding(f, L"Images/ ");
 		fseek(f, i, SEEK_SET);
-		while (ftell(f) < pos){
+		while (ftell(f) < pos - 1){
 			fputwc(fgetwc(f), tm);
 		}
 		i = ftell(f) + 1;
@@ -273,6 +335,7 @@ void replace(FILE*& f, sinhvien p)
 		i = ftell(f);
 		fputws(p.email, tm);
 
+
 		rewind(f);
 		pos = finding(f, L"<ul class=\"TextInList\"> ");
 		fseek(f, i, SEEK_SET);
@@ -280,9 +343,8 @@ void replace(FILE*& f, sinhvien p)
 			fputwc(fgetwc(f), tm);
 		}
 		i = ftell(f);
-		fputws(L"\t\t\t\t\t\t\t\t<li>", tm);
-		fputws(p.sothichx, tm);
-		fputws(L"</li>", tm);
+		ghiSoThich(tm, p.sothichx);
+
 
 		rewind(f);
 		pos = finding(f, L"<div class=\"Description\">");
@@ -317,12 +379,12 @@ void main()
 	}
 	else
 	{
+		int n = 0;
+		n = timN(fIn);
 		sinhvien* x;
 		x = (sinhvien*)malloc(sizeof(sinhvien)* n);
-
 		doc(fIn, x, n);
-		for (int i = 0; i < n; i++)
-			wprintf(L"%ls\n", x[i].mssv);
+
 
 
 		FILE* f;
@@ -331,17 +393,13 @@ void main()
 			wprintf(L"Không mở được FILE!!!\n");
 		}
 		else{
+
 			for (int i = 0; i < n; i++){
 				replace(f, x[i]);
-				wprintf(L"  ");
 			}
 			fclose(f);
 		}
 		fclose(fIn);
 		free(x);
 	}
-
-
-
-	_getch();
 }
