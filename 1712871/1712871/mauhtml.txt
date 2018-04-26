@@ -21,7 +21,7 @@
 					<div class="Personal_Location">        
 						<img src="Images/LogoFooter.jpg" width="27" height="33" />
 						<span class="Personal_FullName"></span>
-						<div class="Personal_Department">KHOA CÔNG NGHỆ THÔNG TIN</div>
+						<div class="Personal_Department">Khoa </div>
 						<br />
 						<div class="Personal_Phone">
 							Email: 

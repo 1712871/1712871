@@ -1,8 +1,8 @@
-﻿#include<stdio.h>
-#include<string.h>
+﻿#include <stdio.h>
+#include <string.h>
 #include <conio.h>
-#include<wchar.h>
-#include<stdlib.h>
+#include <wchar.h>
+#include <stdlib.h>
 #include <fcntl.h> 
 #include <io.h> 
 
@@ -90,76 +90,224 @@ wchar_t* themChuoi(wchar_t* cha, wchar_t* con)
 	return tm;
 }
 
+bool ktEmail(FILE* f, int pos, int a)
+{
+	wchar_t* s;
+	s = (wchar_t*)malloc(sizeof(wchar_t)*a);
+	fseek(f, pos, SEEK_SET);
+	fgetws(s, a, f);
+	int i = 0;
+	while (s[i] != L'\0'){
+		if (s[i] == L'@'){
+			free(s);
+			return true;
+		}
+		i++;
+	}
+	free(s);
+	return false;
+}
+
 void doc(FILE* fIn, sinhvien *x, int N)
 {
-	int begin = 3;
+	int a, b = 3;
 	for (int i = 0; i < N; i++){
-		fseek(fIn, begin, SEEK_SET);
-		int a = token(fIn, L',');
-		x[i].mssv = (wchar_t*)malloc(sizeof(wchar_t)*a);
-		fseek(fIn, begin, SEEK_SET);
-		fgetws(x[i].mssv, a, fIn);
-		int b = ftell(fIn);
-
-		fseek(fIn, b + 1, SEEK_SET);
+		fseek(fIn, b, SEEK_SET);
 		a = token(fIn, L',');
-		x[i].hovaten = (wchar_t*)malloc(sizeof(wchar_t)*a);
-		fseek(fIn, b + 1, SEEK_SET);
-		fgetws(x[i].hovaten, a, fIn);
-		b = ftell(fIn);
-
-		fseek(fIn, b + 1, SEEK_SET);
-		a = token(fIn, L',');
-		x[i].khoa = (wchar_t*)malloc(sizeof(wchar_t)*a);
-		fseek(fIn, b + 1, SEEK_SET);
-		fgetws(x[i].khoa, a, fIn);
-		b = ftell(fIn);
-
-		fseek(fIn, b + 1, SEEK_SET);
-		a = token(fIn, L',');
-		x[i].khoc = (wchar_t*)malloc(sizeof(wchar_t)*a);
-		fseek(fIn, b + 1, SEEK_SET);
-		fgetws(x[i].khoc, a, fIn);
-		b = ftell(fIn);
-
-		fseek(fIn, b + 1, SEEK_SET);
-		a = token(fIn, L',');
-		x[i].ngaysinh = (wchar_t*)malloc(sizeof(wchar_t)*a);
-		fseek(fIn, b + 1, SEEK_SET);
-		fgetws(x[i].ngaysinh, a, fIn);
-		b = ftell(fIn);
-
-		fseek(fIn, b + 1, SEEK_SET);
-		a = token(fIn, L',');
-		x[i].hinhcanhan = (wchar_t*)malloc(sizeof(wchar_t)*a);
-		fseek(fIn, b + 1, SEEK_SET);
-		fgetws(x[i].hinhcanhan, a, fIn);
-		b = ftell(fIn);
-
-		fseek(fIn, b + 1, SEEK_SET);
-		a = token(fIn, L',');
-		x[i].email = (wchar_t*)malloc(sizeof(wchar_t)*a);
-		fseek(fIn, b + 1, SEEK_SET);
-		fgetws(x[i].email, a, fIn);
-		b = ftell(fIn);
-
-		fseek(fIn, b + 1, SEEK_SET);
-		if (fgetwc(fIn) != L'"'){
-			fseek(fIn, b + 1, SEEK_SET);
-			a = token(fIn, L',');
-			x[i].motabanthan = (wchar_t*)malloc(sizeof(wchar_t)*a);
-			fseek(fIn, b + 1, SEEK_SET);
-			fgetws(x[i].motabanthan, a, fIn);
+		fseek(fIn, b, SEEK_SET);
+		if (ktEmail(fIn, b, a) == false){
+			x[i].mssv = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b, SEEK_SET);
+			fgetws(x[i].mssv, a, fIn);
 			b = ftell(fIn);
 		}
 		else{
-			fseek(fIn, b + 2, SEEK_SET);
-			a = token(fIn, L'"');
-			x[i].motabanthan = (wchar_t*)malloc(sizeof(wchar_t)*a);
-			fseek(fIn, b + 2, SEEK_SET);
-			fgetws(x[i].motabanthan, a, fIn);
-			b = ftell(fIn) + 1;
+			x[i].email = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].email, a, fIn);
+			b = ftell(fIn);
+
+			fseek(fIn, b, SEEK_SET);
+			a = token(fIn, L',');
+			x[i].mssv = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b, SEEK_SET);
+			fgetws(x[i].mssv, a, fIn);
+			b = ftell(fIn);
+
 		}
+
+
+		fseek(fIn, b + 1, SEEK_SET);
+		a = token(fIn, L',');
+		fseek(fIn, b + 1, SEEK_SET);
+		if (ktEmail(fIn, b + 1, a) == false){
+			x[i].hovaten = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].hovaten, a, fIn);
+			b = ftell(fIn);
+		}
+		else{
+			x[i].email = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].email, a, fIn);
+			b = ftell(fIn);
+
+			fseek(fIn, b + 1, SEEK_SET);
+			a = token(fIn, L',');
+			x[i].hovaten = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].hovaten, a, fIn);
+			b = ftell(fIn);
+
+
+		}
+
+		fseek(fIn, b + 1, SEEK_SET);
+		a = token(fIn, L',');
+		fseek(fIn, b + 1, SEEK_SET);
+		if (ktEmail(fIn, b + 1, a) == false){
+			x[i].khoa = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].khoa, a, fIn);
+			b = ftell(fIn);
+		}
+		else{
+			x[i].email = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].email, a, fIn);
+			b = ftell(fIn);
+
+			fseek(fIn, b + 1, SEEK_SET);
+			a = token(fIn, L',');
+			x[i].khoa = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].khoa, a, fIn);
+			b = ftell(fIn);
+
+
+		}
+
+		fseek(fIn, b + 1, SEEK_SET);
+		a = token(fIn, L',');
+		fseek(fIn, b + 1, SEEK_SET);
+		if (ktEmail(fIn, b + 1, a) == false){
+			x[i].khoc = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].khoc, a, fIn);
+			b = ftell(fIn);
+		}
+		else{
+			x[i].email = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].email, a, fIn);
+			b = ftell(fIn);
+
+			fseek(fIn, b + 1, SEEK_SET);
+			a = token(fIn, L',');
+			x[i].khoc = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].khoc, a, fIn);
+			b = ftell(fIn);
+
+
+		}
+
+		fseek(fIn, b + 1, SEEK_SET);
+		a = token(fIn, L',');
+		fseek(fIn, b + 1, SEEK_SET);
+		if (ktEmail(fIn, b + 1, a) == false){
+			x[i].ngaysinh = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].ngaysinh, a, fIn);
+			b = ftell(fIn);
+		}
+		else{
+			x[i].email = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].email, a, fIn);
+			b = ftell(fIn);
+
+			fseek(fIn, b + 1, SEEK_SET);
+			a = token(fIn, L',');
+			x[i].ngaysinh = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].ngaysinh, a, fIn);
+			b = ftell(fIn);
+
+
+		}
+
+		fseek(fIn, b + 1, SEEK_SET);
+		a = token(fIn, L',');
+		fseek(fIn, b + 1, SEEK_SET);
+		if (ktEmail(fIn, b + 1, a) == false){
+			x[i].hinhcanhan = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].hinhcanhan, a, fIn);
+			b = ftell(fIn);
+		}
+		else{
+			x[i].email = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].email, a, fIn);
+			b = ftell(fIn);
+
+			fseek(fIn, b + 1, SEEK_SET);
+			a = token(fIn, L',');
+			x[i].hinhcanhan = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].hinhcanhan, a, fIn);
+			b = ftell(fIn);
+		}
+
+		fseek(fIn, b + 1, SEEK_SET);
+		a = token(fIn, L',');
+		fseek(fIn, b + 1, SEEK_SET);
+		if (ktEmail(fIn, b + 1, a) == false){
+			fseek(fIn, b + 1, SEEK_SET);
+			if (fgetwc(fIn) != L'"'){
+				fseek(fIn, b + 1, SEEK_SET);
+				a = token(fIn, L',');
+				x[i].motabanthan = (wchar_t*)malloc(sizeof(wchar_t)*a);
+				fseek(fIn, b + 1, SEEK_SET);
+				fgetws(x[i].motabanthan, a, fIn);
+				b = ftell(fIn);
+			}
+			else{
+				fseek(fIn, b + 2, SEEK_SET);
+				a = token(fIn, L'"');
+				x[i].motabanthan = (wchar_t*)malloc(sizeof(wchar_t)*a);
+				fseek(fIn, b + 2, SEEK_SET);
+				fgetws(x[i].motabanthan, a, fIn);
+				b = ftell(fIn) + 1;
+			}
+		}
+		else{
+			x[i].email = (wchar_t*)malloc(sizeof(wchar_t)*a);
+			fseek(fIn, b + 1, SEEK_SET);
+			fgetws(x[i].email, a, fIn);
+			b = ftell(fIn);
+
+			fseek(fIn, b + 1, SEEK_SET);
+			if (fgetwc(fIn) != L'"'){
+				fseek(fIn, b + 1, SEEK_SET);
+				a = token(fIn, L',');
+				x[i].motabanthan = (wchar_t*)malloc(sizeof(wchar_t)*a);
+				fseek(fIn, b + 1, SEEK_SET);
+				fgetws(x[i].motabanthan, a, fIn);
+				b = ftell(fIn);
+			}
+			else{
+				fseek(fIn, b + 2, SEEK_SET);
+				a = token(fIn, L'"');
+				x[i].motabanthan = (wchar_t*)malloc(sizeof(wchar_t)*a);
+				fseek(fIn, b + 2, SEEK_SET);
+				fgetws(x[i].motabanthan, a, fIn);
+				b = ftell(fIn) + 1;
+			}
+		}
+
+		
 
 		fseek(fIn, b, SEEK_SET);
 		if (fgetwc(fIn) == L','){
@@ -169,11 +317,10 @@ void doc(FILE* fIn, sinhvien *x, int N)
 			x[i].sothichx = (wchar_t*)malloc(sizeof(wchar_t)*a);
 			fseek(fIn, b + 1, SEEK_SET);
 			fgetws(x[i].sothichx, a, fIn);
-			begin = ftell(fIn) + 2;
+			b = ftell(fIn) + 2;
 		}
 		else{
 			x[i].sothichx = L"Không có sở thích";
-			begin = b;
 		}
 	}
 }
@@ -244,7 +391,6 @@ void replace(FILE* f, sinhvien p)
 {
 	wchar_t* e = themChuoi(p.mssv, L".html");
 	FILE* tm;
-	wprintf(L"%ls\n", e);
 	_wfopen_s(&tm, e, L"w, ccs=UTF-8");
 	if (tm == NULL){
 		wprintf(L"Không mở được FILE");
@@ -270,6 +416,15 @@ void replace(FILE* f, sinhvien p)
 		fputws(p.hovaten, tm);
 		fputws(L" - ", tm);
 		fputws(p.mssv, tm);
+
+		rewind(f);
+		pos = finding(f, L"Personal_Department\">Khoa ");
+		fseek(f, i, SEEK_SET);
+		while (ftell(f) < pos){
+			fputwc(fgetwc(f), tm);
+		}
+		i = ftell(f);
+		fputws(p.khoa, tm);
 
 		rewind(f);
 		pos = finding(f, L"Email: ");
@@ -384,7 +539,6 @@ void main()
 		sinhvien* x;
 		x = (sinhvien*)malloc(sizeof(sinhvien)* n);
 		doc(fIn, x, n);
-
 
 
 		FILE* f;
